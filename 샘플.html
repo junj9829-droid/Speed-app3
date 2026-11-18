@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>지도 (1단계)</title>
+<style>
+:root{--bg:#f8fafc;--ink:#1e293b;--mute:#94a3b8;--sub:#64748b;--ind:#4f46e5;--ind-bg:#eef2ff;--ind-line:#dfe5fb;--org:#f59e0b;--track:#f1f5f9;--ok:#047857;--ok-bg:#ecfdf5;--line:#e2e8f0}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
+.app{max-width:480px;min-height:100dvh;margin:0 auto;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid #eef1f5;padding:calc(env(safe-area-inset-top) + 16px) 20px 14px}
+.dot{width:20px;height:20px;border-radius:50%;background:#d4d1f7;flex:none}
+.dot.on{background:#6c63e8;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.dot.on{animation:none}}
+h1{font-size:20px;margin:0;flex:1}
+.pill{font-size:14px;font-weight:700;color:var(--ind);background:#eef0ff;padding:7px 14px;border-radius:999px}
+main{flex:1;padding:20px 20px 8px;display:flex;flex-direction:column;gap:20px}
+.info{background:var(--ind-bg);border:1px solid var(--ind-line);border-radius:18px;padding:18px 20px}
+.info h2{margin:0 0 6px;font-size:18px;color:#312e81}
+.info p{margin:0;font-size:15px;line-height:1.55;color:#4338ca}
+.card{background:#fff;border:1px solid #f1f5f9;border-radius:22px;padding:22px 20px;box-shadow:0 4px 18px rgba(15,23,42,.05)}
+.card h3{margin:0;font-size:15px}
+.gauge-title{text-align:center;color:var(--mute)}
+.gauge{position:relative;max-width:300px;margin:14px auto 0}
+.gauge svg{display:block;width:100%;height:auto}
+.gauge path{fill:none;stroke-width:26}
+.val{position:absolute;left:0;right:0;bottom:6px;text-align:center}
+.val b{font-size:42px;font-variant-numeric:tabular-nums}
+.val span{font-size:16px;font-weight:700;color:var(--sub);margin-left:5px}
+.chip{display:table;margin:14px auto 18px;background:var(--ok-bg);color:var(--ok);font-weight:700;font-size:15px;padding:9px 18px;border-radius:999px}
+.tabs{display:flex;gap:10px}
+.tabs button{flex:1;padding:13px 4px;font-size:15px;font-weight:700;color:var(--sub);background:#fff;border:2px solid var(--line);border-radius:14px}
+.tabs button[aria-pressed="true"]{color:var(--ind);background:var(--ind-bg);border-color:var(--ind)}
+.tabs button:disabled{opacity:.5}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.head span{font-size:14px;color:var(--mute);white-space:nowrap}
+.bar{height:12px;border-radius:999px;background:var(--track);margin:14px 0 16px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--ind);border-radius:999px}
+.dark{width:100%;padding:16px;font-size:16px;font-weight:700;color:#fff;background:var(--ink);border:0;border-radius:14px}
+footer{position:sticky;bottom:0;padding:8px 20px calc(env(safe-area-inset-bottom) + 16px);background:linear-gradient(transparent,var(--bg) 30%)}
+.toast{min-height:1.3em;margin:0 0 8px;text-align:center;font-size:14px;color:var(--sub)}
+.cta{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:19px;font-size:17px;font-weight:700;color:#fff;background:var(--ind);border:0;border-radius:18px;box-shadow:0 10px 24px rgba(79,70,229,.3)}
+.seg{display:flex;gap:6px;margin-top:12px}
+.seg button{flex:1;padding:9px 4px;font-size:13px;font-weight:700;color:var(--sub);background:#fff;border:1px solid var(--line);border-radius:10px}
+.seg button[aria-pressed="true"]{color:var(--ind);background:var(--ind-bg);border-color:var(--ind)}
+.seg button:disabled{opacity:.5}
+.manual{display:flex;gap:8px;margin-top:12px}
+.manual[hidden]{display:none}
+.manual input{flex:1;min-width:0;padding:12px;font-size:17px;border:2px solid var(--line);border-radius:12px;color:var(--ink)}
+.manual button{padding:0 20px;font-size:16px;font-weight:700;color:#fff;background:var(--ind);border:0;border-radius:12px}
+#v1,#v2{flex:1;display:flex;flex-direction:column}
+[hidden]{display:none!important}
+.back{width:34px;height:34px;flex:none;border:0;border-radius:50%;background:var(--ind-bg);color:var(--ind);font-size:22px;font-weight:700;line-height:1;padding:0}
+.fields{display:flex;gap:12px}
+.fields label{flex:1;font-size:13px;font-weight:700;color:var(--sub)}
+.fields input{width:100%;margin-top:6px;padding:13px;font-size:18px;border:2px solid var(--line);border-radius:12px;color:var(--ink);background:#fff}
+.warn{min-height:1.3em;margin:10px 0 0;font-size:13px;color:#b45309}
+.stride{text-align:center;margin-top:10px}
+.stride b{font-size:46px;font-variant-numeric:tabular-nums}
+.stride span{font-size:16px;font-weight:700;color:var(--sub);margin-left:5px}
+.sub{text-align:center;font-size:13px;color:var(--mute);margin:4px 0 14px}
+.rows{width:100%;border-collapse:collapse;font-size:15px}
+.rows td{padding:11px 4px;border-top:1px solid var(--track)}
+.rows td:nth-child(2){color:var(--mute);text-align:center;font-size:13px}
+.rows td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.ref{text-align:center;font-size:13px;color:var(--mute);margin:-8px 0 16px}
+.ref:empty{display:none}
+.diag{margin:12px 0 0;font-size:12px;line-height:1.5;color:var(--mute);word-break:break-all}
+.diag:empty{display:none}
+button:focus-visible{outline:3px solid #6c63e8;outline-offset:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <button class="back" id="back" hidden aria-label="신체 정보 화면으로 돌아가기">&#8249;</button>
+    <span class="dot" id="dot"></span><h1 id="title">내 신체 정보</h1><span class="pill" id="pill">시작</span>
+  </header>
+  <div id="v1">
+    <main>
+      <section class="info">
+        <h2>키와 발 사이즈로 보폭 추정</h2>
+        <p>키와 발 사이즈를 입력하면 예상 보폭과 걸음, 뛰기, 질주 속도를 계산해요. 정확한 값은 다음 단계에서 직접 측정해요.</p>
+      </section>
+      <section class="card">
+        <div class="fields">
+          <label>키 (cm)<input id="h" type="number" inputmode="decimal" placeholder="예: 170"></label>
+          <label>발 사이즈 (mm)<input id="f" type="number" inputmode="decimal" placeholder="예: 255"></label>
+        </div>
+        <p class="warn" id="warn" aria-live="polite"></p>
+      </section>
+      <section class="card" aria-live="polite">
+        <h3 class="gauge-title">예상 보폭과 속도</h3>
+        <div class="stride"><b id="stride">-</b><span>cm</span></div>
+        <p class="sub">걸을 때 한 걸음의 길이(추정)</p>
+        <table class="rows">
+          <tr><td>걸음</td><td>115걸음/분</td><td id="s-walk">-</td></tr>
+          <tr><td>뛰기</td><td>160걸음/분</td><td id="s-run">-</td></tr>
+          <tr><td>질주</td><td>190걸음/분</td><td id="s-sprint">-</td></tr>
+        </table>
+      </section>
+    </main>
+    <footer>
+      <button class="cta" id="detail">속도 상세 측정
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </footer>
+  </div>
+  <div id="v2" hidden>
+  <main>
+    <section class="info">
+      <h2>나만의 보행 및 이동 속도 등록</h2>
+      <p>획일적인 지도 앱의 시간 오차를 극복하기 위해 평소 본인의 걸음, 뛰기, 빠른 달리기의 속도를 사전 측정합니다.</p>
+    </section>
+    <section class="card">
+      <h3 class="gauge-title">현재 측정된 속도 프로필</h3>
+      <div class="gauge">
+        <svg viewBox="0 0 300 160" aria-hidden="true">
+          <path d="M30 150A120 120 0 0 1 270 150" pathLength="100" stroke="#f1f5f9"/>
+          <path id="arc" d="M30 150A120 120 0 0 1 270 150" pathLength="100" stroke="#4f46e5"/>
+          <path d="M30 150A120 120 0 0 1 270 150" pathLength="100" stroke="#f59e0b" stroke-dasharray="6 200"/>
+        </svg>
+        <div class="val" aria-live="polite"><b id="val">0.0</b><span>km/h</span></div>
+      </div>
+      <div class="chip" id="chip">상태: 측정 전</div>
+      <p class="ref" id="ref"></p>
+      <div class="tabs" role="group" aria-label="속도 프로필">
+        <button data-k="walk" aria-pressed="true"></button>
+        <button data-k="run" aria-pressed="false"></button>
+        <button data-k="sprint" aria-pressed="false"></button>
+      </div>
+    </section>
+    <section class="card">
+      <div class="head"><h3>10초 이동 테스트 실습</h3><span id="tstate">대기 중</span></div>
+      <div class="bar"><i id="fill"></i></div>
+      <button class="dark" id="go"></button>
+      <div class="seg" role="group" aria-label="측정 방식">
+        <button data-m="gps">GPS 자동</button>
+        <button data-m="manual">거리 직접 입력</button>
+      </div>
+      <div class="manual" id="manual" hidden>
+        <input id="mdist" type="number" inputmode="decimal" placeholder="이동 거리 (m)" aria-label="이동 거리(m)">
+        <button id="mok">확인</button>
+      </div>
+      <p class="diag" id="diag"></p>
+    </section>
+  </main>
+  <footer>
+    <p class="toast" id="toast" aria-live="polite"></p>
+    <button class="cta" id="save">속도 저장 후 실시간 코칭으로 이동
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </footer>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const MAX = 15, TEST_S = 10; // 게이지 최대 km/h, 테스트 시간(초)
+const INFO = {
+  walk:   {name: "걸음", verb: "걸어주세요!"},
+  run:    {name: "뛰기", verb: "뛰어주세요!"},
+  sprint: {name: "질주", verb: "전력으로 달려주세요!"}
+};
+const prof = {walk: 0, run: 0, sprint: 0};
+// 측정 전에는 0, 측정 후에는 측정한 속도를 보여줍니다.
+const shownVal = k => measured.includes(k) ? prof[k] : 0;
+let measured = [], sel = "walk";
+let method = "gps", readyTimer = null;
+let phase = "idle"; // idle(대기) / locking(GPS 확인 중) / running(10초 측정 중)
+let watchId = null, timer = null, lockTimer = null, t0 = 0, fixes = [];
+
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+};
+
+// ---- 신체 정보 -> 예상 보폭/속도
+const CAD = {walk: 115, run: 160, sprint: 190}; // 가정한 분당 걸음 수
+const factor = c => c <= 130 ? 0.415 : Math.min(0.8, 0.415 + 0.004 * (c - 130)); // 키 대비 보폭 비율
+let est = null; // {step: 걸을 때 보폭(cm), speeds: {walk, run, sprint}(km/h)}
+
+function computeEst(){
+  const hs = $("h").value.trim(), fs = $("f").value.trim();
+  const h = parseFloat(hs), f = parseFloat(fs);
+  const hOk = h >= 100 && h <= 230, fOk = f >= 150 && f <= 350;
+  let warn = "";
+  if((hs && !hOk) || (fs && !fOk)) warn = "키는 100~230cm, 발 사이즈는 150~350mm 사이로 입력해 주세요.";
+  else if(hOk && fOk && (f / 10 / h < 0.12 || f / 10 / h > 0.18)) warn = "키와 발 사이즈의 비율이 일반적인 범위를 벗어나요. 입력을 확인해 주세요.";
+  $("warn").textContent = warn;
+
+  const steps = [];
+  if(hOk) steps.push(h * 0.415);          // 키 기준: 걸을 때 보폭 = 키 x 0.415
+  if(fOk) steps.push(f / 10 * 2.75);      // 발 기준: 걸을 때 보폭 = 발 길이 x 2.75
+  if(!steps.length){
+    est = null; $("stride").textContent = "-";
+    ["walk", "run", "sprint"].forEach(k => $("s-" + k).textContent = "-");
+    return;
+  }
+  const step = steps.reduce((a, b) => a + b, 0) / steps.length; // 둘 다 있으면 평균
+  const heff = step / 0.415;
+  const speeds = {};
+  for(const k in CAD) speeds[k] = heff / 100 * factor(CAD[k]) * CAD[k] / 60 * 3.6;
+  est = {step, speeds};
+  $("stride").textContent = step.toFixed(1);
+  for(const k in CAD) $("s-" + k).textContent = "약 " + speeds[k].toFixed(1) + " km/h";
+}
+
+function showView(n){
+  $("v1").hidden = n !== 1; $("v2").hidden = n !== 2; $("back").hidden = n !== 2;
+  $("title").textContent = n === 1 ? "내 신체 정보" : "지도 (1단계)";
+  $("pill").textContent = n === 1 ? "시작" : "Phase 1";
+  document.title = $("title").textContent;
+  window.scrollTo(0, 0);
+}
+
+function onBody(){
+  computeEst();
+  store.set("body", JSON.stringify({h: $("h").value, f: $("f").value}));
+  render();
+}
+
+function render(){
+  const v = shownVal(sel);
+  $("val").textContent = v.toFixed(1);
+  const f = Math.max(6, Math.min(100, v / MAX * 100));
+  $("arc").setAttribute("stroke-dasharray", "0 6 " + (f - 6) + " 200");
+  $("chip").textContent = measured.includes(sel) ? "상태: 측정 완료 및 최적화됨" : "상태: 측정 전";
+  $("ref").textContent = est ? "신체 정보 기준 예상: 약 " + est.speeds[sel].toFixed(1) + "km/h" : "";
+  document.querySelectorAll(".tabs button").forEach(b => {
+    const k = b.dataset.k;
+    b.textContent = INFO[k].name + " (" + shownVal(k).toFixed(1) + ")";
+    b.setAttribute("aria-pressed", String(k === sel));
+  });
+  if(phase === "idle") $("go").textContent = INFO[sel].name + " 속도 측정 시작 (10초)";
+}
+
+function renderMethod(){
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === method)));
+}
+
+function setBusy(on){
+  $("dot").classList.toggle("on", on);
+  document.querySelectorAll(".tabs button, .seg button").forEach(b => b.disabled = on);
+}
+
+function resetUI(){
+  clearInterval(timer); timer = null;
+  clearTimeout(lockTimer); lockTimer = null;
+  clearInterval(readyTimer); readyTimer = null;
+  $("manual").hidden = true;
+  if(watchId != null){ navigator.geolocation.clearWatch(watchId); watchId = null; }
+  phase = "idle"; setBusy(false);
+  $("tstate").textContent = "대기 중";
+  $("fill").style.width = "0";
+  render();
+}
+
+// 두 좌표 사이의 직선거리(m)
+function haversine(a, b){
+  const R = 6371000, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLon = (b.lon - a.lon) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function startTest(){
+  if(!navigator.geolocation){ $("toast").textContent = "이 브라우저는 위치 기능을 지원하지 않아요."; return; }
+  if(location.protocol === "file:"){
+    gpsFail("파일을 직접 열면 위치 기능을 쓸 수 없어요. 서버를 실행해 http://localhost 주소로 열거나, 웹에 올린 https 주소로 접속해 주세요.",
+      "진단 - 주소: " + location.href.slice(0, 80));
+    return;
+  }
+  if(!window.isSecureContext){
+    gpsFail("이 주소는 보안 연결이 아니라서 크롬이 위치 기능을 막아요. 해결: chrome://flags 의 'Insecure origins treated as secure'에 아래 '주소'를 한 글자도 다르지 않게 입력하고 Enabled로 바꾼 뒤 크롬을 완전히 다시 시작하거나, https 주소(ngrok 등)로 접속해 주세요.",
+      "진단 - 주소: " + location.origin + " / 보안 연결: 아니요");
+    return;
+  }
+  phase = "locking"; fixes = [];
+  setBusy(true);
+  $("go").textContent = "GPS 신호 확인 중...";
+  $("toast").textContent = "야외에서 멈춘 채로 잠시 기다려 주세요. 신호를 잡으면 바로 시작해요.";
+  watchId = navigator.geolocation.watchPosition(onFix, onGpsError, {enableHighAccuracy: true, maximumAge: 0, timeout: 20000});
+  // 25초 안에 정확한 위치를 못 잡으면 중단 (PC는 위치 오차가 커서 자주 발생)
+  lockTimer = setTimeout(() => {
+    if(phase === "locking"){
+      gpsFail("GPS 정확도가 낮아 시작하지 못했어요. 야외에서 시도하고, 설정 > 앱 > Chrome > 권한 > 위치에서 '정확한 위치 사용'이 켜져 있는지 확인해 주세요.",
+        "진단 - 주소: " + location.origin + " / 보안 연결: " + (window.isSecureContext ? "예" : "아니요") + " / 25초 안에 오차 20m 이내 위치를 받지 못함");
+    }
+  }, 25000);
+}
+
+// GPS 없이 측정: 3초 준비 -> 10초 이동 -> 이동 거리를 직접 입력
+function startManual(){
+  phase = "ready"; setBusy(true);
+  let n = 3;
+  $("go").textContent = "준비하세요... " + n;
+  $("toast").textContent = "0이 되면 바로 이동을 시작해 주세요. (누르면 취소)";
+  readyTimer = setInterval(() => {
+    n--;
+    if(n > 0){ $("go").textContent = "준비하세요... " + n; return; }
+    clearInterval(readyTimer); readyTimer = null;
+    phase = "running"; t0 = performance.now();
+    $("go").textContent = "측정 진행 중... " + INFO[sel].verb;
+    $("toast").textContent = TEST_S + "초 동안 같은 방향으로 이동하고, 도착한 위치를 기억해 두세요.";
+    timer = setInterval(tick, 100);
+  }, 1000);
+}
+
+function applyResult(v, text){
+  prof[sel] = Math.min(40, v);
+  if(!measured.includes(sel)) measured.push(sel);
+  $("toast").textContent = INFO[sel].name + ": " + text + ", " + prof[sel].toFixed(1) + "km/h로 측정했어요.";
+  store.set("profile", JSON.stringify({prof, measured}));
+  render();
+}
+
+function confirmManual(){
+  const d = parseFloat($("mdist").value);
+  if(!(d >= 0.5 && d <= 150)){ $("toast").textContent = "이동 거리를 0.5~150m 사이로 입력해 주세요."; return; }
+  $("manual").hidden = true;
+  applyResult(d / TEST_S * 3.6, TEST_S + "초 동안 " + d.toFixed(1) + "m 이동");
+}
+
+function onFix(pos){
+  const c = pos.coords;
+  if(c.accuracy > 20) return; // 정확도가 낮은 위치는 버림
+  const fix = {lat: c.latitude, lon: c.longitude, t: pos.timestamp};
+  if(phase === "locking"){
+    phase = "running"; fixes = [fix]; t0 = performance.now();
+    $("go").textContent = "측정 진행 중... " + INFO[sel].verb;
+    $("toast").textContent = "지금부터 " + TEST_S + "초 동안 같은 방향으로 이동해 주세요. (누르면 취소)";
+    timer = setInterval(tick, 100);
+  }else if(phase === "running"){
+    fixes.push(fix);
+  }
+}
+
+// GPS를 못 쓸 때: 원인을 알려주고 '거리 직접 입력' 방식으로 자동 전환
+function gpsFail(text, diag){
+  resetUI();
+  method = "manual"; store.set("method", method); renderMethod();
+  $("toast").textContent = text + " 지금은 '거리 직접 입력' 방식으로 바꿔 두었어요. 측정 시작을 다시 눌러 주세요.";
+  $("diag").textContent = diag || "";
+}
+
+async function onGpsError(err){
+  let perm = "확인 불가";
+  try{ perm = (await navigator.permissions.query({name: "geolocation"})).state; }catch(e){}
+  const diag = "진단 - 주소: " + location.origin + " / 보안 연결: " + (window.isSecureContext ? "예" : "아니요")
+    + " / 사이트 위치 권한: " + perm + " / 오류: " + err.code + (err.message ? " (" + err.message + ")" : "");
+  let text;
+  if(err.code === 1){
+    if(perm === "denied") text = "이 사이트의 위치 권한이 '차단'으로 저장돼 있어요. 주소창 왼쪽 아이콘 > 권한(사이트 설정)에서 위치를 '허용'으로 바꾸고 새로고침해 주세요.";
+    else if(perm === "granted") text = "사이트 권한은 허용인데 기기가 위치를 거부했어요. 설정 > 위치가 켜져 있는지, 설정 > 앱 > Chrome > 권한 > 위치가 '허용'인지 확인해 주세요.";
+    else text = "위치 권한이 허용되지 않았어요. 허용 팝업이 뜨면 '허용'을 눌러 주세요.";
+  }else if(err.code === 2){
+    text = "위치를 확인할 수 없어요. 실내이거나 기기에 GPS가 없을 수 있어요.";
+  }else{
+    text = "위치 확인 시간이 초과됐어요. 야외에서 다시 시도해 주세요.";
+  }
+  gpsFail(text, diag);
+}
+
+function tick(){
+  const s = (performance.now() - t0) / 1000;
+  $("tstate").textContent = Math.min(s, TEST_S).toFixed(1) + "초 경과";
+  $("fill").style.width = Math.min(100, s / TEST_S * 100) + "%";
+  if(s >= TEST_S) finishTest();
+}
+
+function finishTest(){
+  if(method === "manual"){
+    resetUI();
+    $("manual").hidden = false; $("mdist").value = ""; $("mdist").focus();
+    $("toast").textContent = "10초 동안 이동한 거리(m)를 입력해 주세요. 줄자, 바닥 타일 개수, 걸음 수 × 보폭 등으로 구할 수 있어요.";
+    return;
+  }
+  const used = fixes.slice();
+  resetUI();
+  if(used.length < 2){ $("toast").textContent = "GPS 신호가 약했어요. 야외에서 다시 측정해 주세요."; return; }
+  const first = used[0], last = used[used.length - 1];
+  const dt = (last.t - first.t) / 1000;
+  if(dt < 6){ $("toast").textContent = "GPS 신호가 약했어요. 야외에서 다시 측정해 주세요."; return; }
+  const d = haversine(first, last);
+  const v = d / dt * 3.6;
+  if(v < 0.5){ $("toast").textContent = "이동이 거의 감지되지 않았어요. 다시 측정해 주세요."; return; }
+  applyResult(v, dt.toFixed(1) + "초 동안 " + d.toFixed(1) + "m 이동");
+}
+
+async function save(){
+  store.set("profile", JSON.stringify({prof, measured}));
+  try{
+    const r = await fetch("/api/profile", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({walk: prof.walk, run: prof.run, sprint: prof.sprint, measured})});
+    if(!r.ok) throw new Error();
+    $("toast").textContent = "속도를 저장했어요. 실시간 코칭 화면은 다음 단계에서 연결해요.";
+  }catch(e){
+    $("toast").textContent = "이 기기에 저장했어요. (서버 없이 쓰면 다른 기기와는 공유되지 않아요.)";
+  }
+}
+
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => { sel = b.dataset.k; render(); }));
+$("go").addEventListener("click", () => {
+  if(phase === "idle"){ $("manual").hidden = true; $("diag").textContent = ""; method === "manual" ? startManual() : startTest(); }
+  else { resetUI(); $("toast").textContent = "측정을 취소했어요."; }
+});
+$("save").addEventListener("click", save);
+$("mok").addEventListener("click", confirmManual);
+$("h").addEventListener("input", onBody);
+$("f").addEventListener("input", onBody);
+$("detail").addEventListener("click", () => showView(2));
+$("back").addEventListener("click", () => { if(phase !== "idle") resetUI(); $("toast").textContent = ""; showView(1); });
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+  method = b.dataset.m; store.set("method", method); renderMethod();
+}));
+
+(async function init(){
+  method = store.get("method") === "manual" ? "manual" : "gps"; renderMethod();
+  try{ const b = JSON.parse(store.get("body")); if(b){ $("h").value = b.h || ""; $("f").value = b.f || ""; } }catch(_){}
+  computeEst();
+  try{
+    const r = await fetch("/api/profile"); const d = await r.json();
+    ["walk", "run", "sprint"].forEach(k => { if(typeof d[k] === "number") prof[k] = d[k]; });
+    measured = d.measured || [];
+  }catch(e){
+    try{ const l = JSON.parse(store.get("profile")); if(l){ Object.assign(prof, l.prof); measured = l.measured || []; } }catch(_){}
+  }
+  render();
+})();
+</script>
+</body>
+</html>
